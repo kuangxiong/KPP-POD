@@ -1,0 +1,7 @@
+LIBS_FFT = -L /opt/fftw/fftw-3/lib -lfftw3
+LIBS_LAPACK = -llapack -lblas -lpthread
+LIBS = $(LIBS_FFT) $(LIBS_LAPACK)
+CC := gfortran
+MAKEROOT = ~/KPP/kuangx/paralle/2017-11-25/
+%.o:%.F90
+	${CC} -c $< -o ${MAKEROOT}/obj/$@ $(LIBS)
