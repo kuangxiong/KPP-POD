@@ -1,6 +1,6 @@
 ! Full K space sample with err indicator
    subroutine KPP_run(N, lam, eps, tau, theta, dt, t, Amp, y)
-#include "/opt/fftw/fftw-3/include/fftw3.f"
+#include "/home/kuangx/opt/fftw/include/fftw3.f"
      ! Arguments
      integer :: N
      real*8 :: lam, eps, tau, theta, dt, t, Amp, y
@@ -46,7 +46,7 @@
 
      pi=dacos(-1.0D+0)
      t = 0.0D+0
-     tmax = 0.01D+0
+     tmax = 0.0002D+0
      t2 = 20.0D+0 - tmax  
      h = 1.0D+0/N
      cM = eps*lam*lam + lam*Amp*sqrt(theta*theta + 1.0D+0) + 1.0D+0/tau
@@ -57,9 +57,10 @@
 
      !kmax = int(tmax)
      kmax = 1000
-     nc = 100 ! Take the snapshots of u every nc steps
+     nc = 20 ! Take the snapshots of u every nc steps
 !     ncup = int(tmax/(nc*dt)) ! Number of columns of UP
-     ncup =101 
+     ncup = int(tmax/(dt))+2 ! Number of columns of UP
+!     ncup =21 
      pc = 0.99999999999d0
      pc2 = 0.9999999999d0
      pc3 = 0.999d0
@@ -132,8 +133,8 @@
 
      niter = 1
      exiter = 0
-!     do while( t .le. tmax)
-     do while( niter .le. 100)
+     do while( t .le. tmax)
+!     do while( niter .le. 20)
        niter = niter + 1
        cost = cos(t)
        t = t + dt
@@ -315,7 +316,6 @@
      call zgemm('C', 'N', m, m, N*N, dcmplx(1.0D+0,0.0D+0), BN1,&
                 N*N, temp_hat1, N*N, dcmplx(0.0D+0,0.0D+0), &
                 Fixm, m)
-!     do j=1, m
 !        do i= 1, N*N
 !            write(*,*)'hehe', BN1(i, 1)!, temp_hat1(i,1)
 !        end do
@@ -323,10 +323,8 @@
 
      call sparse_BuildBNx(m, N, pi, BNx, BN)
 
-
-
      call sparse_CopyMatrix_Symmetrize(m, N, temp_hat1, BNx)
-     write(*,*)'BNx'
+!     write(*,*)'BNx'
 !     do j=1,N
 !        do i=1,N
 !            write(*,'(3F10.6)'), temp_hat1((i-1)*N+j, 2)
@@ -408,11 +406,11 @@
 !     write(*,*)'Fixm'
 !     do j=1,m
 !        do i=1,m
-!            write(*,'(3F10.6)'), Fixm(j,i)
-!!            write(*,*), Fixm(i,j)
+!     !       write(*,'(3F10.6)'), Fixm(j,i)
+!            write(*,*), Fixm(i,j)
 !        end do 
 !     end do
-
+!
 
      call sparse_BuildRBBNxRBBNy2(m, N, sinx, Amp, theta, Bx, By, RBNx, RBNy,&
      RBBNx, RBBNy)
@@ -431,7 +429,7 @@
      ! BBNy = BBNy + BBNx
      !call zaxpy((N/2+1)*N*m, dcmplx(1.0D+0,0.0D+0), BBNx, 1, BBNy, 1)
      call zaxpy((N/2+1)*N*m, dcmplx(1.0D+0,0.0D+0), BBNx, 1, BBNyt, 1)
-     write(*,*)'temp_hat'
+!     write(*,*)'temp_hat'
 !     do i=1, N
 !        do j=1, N/2+1
 !            write(*,'(3F10.6)'), BBNyt((i-1)*(N/2+1)+j, 1)
@@ -471,7 +469,7 @@
      call zgemm('C', 'N', m, m, N*N, dcmplx(1.0D+0,0.0D+0), &
                 BN1, N*N, temp_hat1, N*N, dcmplx(0.0D+0,0.0D+0), &
                 Varm1, m)
-!     write(*,*)'Varm1'
+     write(*,*)'Varm1'
 !     do i=1,m
 !        do j=1,m
 !            write(*,'(3F10.6)'), Fixm(i,j)
@@ -489,11 +487,15 @@
 !!
 !!     exiter = 0
      ts = 0
-     t =0.02
+!     t =0.02
 !!     exflg = 0
 !!     do while( t .le. tmax + t2)
+    write(*,*)"1111111111", t
+!!    do while( t .le. 0.00025)
+!!     do while( jj .le. 5)
        cost = cos(t)
-!!       t = t + dt
+       t = t + dt
+       write(*,*)'cost', cost
 !!
 !!       !call sparse_ComputePlane(pi, cost, dt, N, C, Amp, lam,  theta, eps, u_hat, ux_hat, uy_hat, rhs_hat)
        forall(j = 1:m)
@@ -506,47 +508,56 @@
        
 !        do i=1, m
 !            do j=1,m
-!                write(*,'(3F10.6)'), Varm(j,i)
+!!                write(*,'(3F10.6)'), Fixm(j,i)
+!                write(*,*), Fixm(j,i)
 !            end do
 !        end do
         call zgemv('N', m, m, dcmplx(dt,0.0D+0), Varm, m, a_hat, 1, &
                   dcmplx(0.0D+0,0.0D+0), at_hat, 1)
-       do i = 1, m
-            write(*,'(3F10.6)'), at_hat(i)
-       end do
+!       do i = 1, m
+!            write(*,'(3F10.6)'), at_hat(i)
+!       end do
        do i = 1, m
          !a_hat(i) = a_hat(i) + at_hat(i)
          anew_hat(i) = a_hat(i) + at_hat(i)
+!         a_hat(i) = anew_hat(i)
+ !        write(*,'(3F10.6)'), anew_hat(i)
        end do
-!!
-!!       ! The error indicator
-!!       if(mod(exiter, 100) .eq. 0) then
-!!         call zgemv('N', (N/2+1)*N, m, dcmplx(1.0D+0,0.0D+0), BN, &
-!!                (N/2+1)*N, a_hat, 1, dcmplx(0.0D+0,0.0D+0), su_hat, 1)
-!!         call zgemv('N', (N/2+1)*N, m, dcmplx(1.0D+0,0.0D+0), BN, &
-!!           (N/2+1)*N, anew_hat, 1, dcmplx(0.0D+0,0.0D+0), sunew_hat, 1)
-!!
-!!         call zgemv('N', (N/2+1)*N, m, dcmplx(eps,0.0D+0), BNlap, &
-!!           (N/2+1)*N, a_hat, 1, dcmplx(0.0D+0,0.0D+0), rhs_hat, 1)
-!!         call zgemv('N', (N/2+1)*N, m, dcmplx(2*eps*lam,0.0D+0), BNx, &
-!!           (N/2+1)*N, a_hat, 1, dcmplx(1.0D+0,0.0D+0), rhs_hat, 1)
-!!         call zgemv('N', (N/2+1)*N, m, dcmplx(1.0D+0,0.0D+0), BBNy, &
-!!           (N/2+1)*N, a_hat, 1, dcmplx(1.0D+0,0.0D+0), rhs_hat, 1)
-!!         call zgemv('N', (N/2+1)*N, m, dcmplx(cost,0.0D+0), BBNyt, &
-!!           (N/2+1)*N, a_hat, 1, dcmplx(1.0D+0,0.0D+0), rhs_hat, 1)
-!!         call zgemv('N', (N/2+1)*N, m, dcmplx(C,0.0D+0), BN, &
-!!           (N/2+1)*N, a_hat, 1, dcmplx(1.0D+0,0.0D+0), rhs_hat, 1)
-!!
-!!         do j = 1, N
-!!           do i = 1, N/2 + 1
-!!             rhs_hat(i, j)=(sunew_hat(i,j)-su_hat(i,j))/dt-rhs_hat(i,j)
-!!           end do
-!!         end do
-!!         res = dnrm2((N/2+1)*N*2,rhs_hat,1)/dnrm2((N/2+1)*N*2,su_hat,1)
-!!         write(22, *), 'time ', t, 'err_ind', res, &
-!!           'err',  dnrm2((N/2+1)*N*2, rhs_hat,1), &
-!!           'su', dnrm2((N/2+1)*N*2, su_hat,1)
-!!
+!       end do 
+       do i = 1, m
+         write(*,'(3F10.6)'), anew_hat(i)
+       end do
+
+       ! The error indicator
+!       if(mod(exiter, 100) .eq. 0) then
+         call zgemv('N', (N/2+1)*N, m, dcmplx(1.0D+0,0.0D+0), BN, &
+                (N/2+1)*N, a_hat, 1, dcmplx(0.0D+0,0.0D+0), su_hat, 1)
+         call zgemv('N', (N/2+1)*N, m, dcmplx(1.0D+0,0.0D+0), BN, &
+           (N/2+1)*N, anew_hat, 1, dcmplx(0.0D+0,0.0D+0), sunew_hat, 1)
+
+         call zgemv('N', (N/2+1)*N, m, dcmplx(eps,0.0D+0), BNlap, &
+           (N/2+1)*N, a_hat, 1, dcmplx(0.0D+0,0.0D+0), rhs_hat, 1)
+         call zgemv('N', (N/2+1)*N, m, dcmplx(2*eps*lam,0.0D+0), BNx, &
+           (N/2+1)*N, a_hat, 1, dcmplx(1.0D+0,0.0D+0), rhs_hat, 1)
+         call zgemv('N', (N/2+1)*N, m, dcmplx(1.0D+0,0.0D+0), BBNy, &
+           (N/2+1)*N, a_hat, 1, dcmplx(1.0D+0,0.0D+0), rhs_hat, 1)
+         call zgemv('N', (N/2+1)*N, m, dcmplx(cost,0.0D+0), BBNyt, &
+           (N/2+1)*N, a_hat, 1, dcmplx(1.0D+0,0.0D+0), rhs_hat, 1)
+         call zgemv('N', (N/2+1)*N, m, dcmplx(C,0.0D+0), BN, &
+           (N/2+1)*N, a_hat, 1, dcmplx(1.0D+0,0.0D+0), rhs_hat, 1)
+
+         do j = 1, N
+           do i = 1, N/2 + 1
+             rhs_hat(i, j)=(sunew_hat(i,j)-su_hat(i,j))/dt-rhs_hat(i,j)
+           end do
+         end do
+         res = dnrm2((N/2+1)*N*2,rhs_hat,1)/dnrm2((N/2+1)*N*2,su_hat,1)
+         write(* , *)"errindicator", res, dnrm2((N/2+1)*N*2, su_hat,1)
+!     end if 
+!         write(22, *), 'time ', t, 'err_ind', res, &
+!           'err',  dnrm2((N/2+1)*N*2, rhs_hat,1), &
+!           'su', dnrm2((N/2+1)*N*2, su_hat,1)
+!   end if 
 !!         !if ( res .ge. gamma .and. ts .le. 5) then
 !!#if 0
 !!         if ( res .ge. gamma ) then
@@ -999,9 +1010,9 @@
 !!#endif
 !!       end if
 !!
-!!       do i = 1, m
-!!         a_hat(i) = anew_hat(i)
-!!       end do
+!       do i = 1, m
+!         a_hat(i) = anew_hat(i)
+!       end do
 !!
 !!       if (exflg .eq. 1) exit
 !!       !! The error
@@ -1063,7 +1074,7 @@
 !!       !            'error', dznrm2((N/2+1)*N, su_hat-u_hat, 1), &
 !!       ! 'relerror',dznrm2((N/2+1)*N, su_hat-u_hat, 1)/dznrm2((N/2+1)*N,&
 !!       !            u_hat, 1)
-!!     end do
+!     end do
 !!
 !!     !write(100, *) 'norm u_hat', dznrm2((N/2+1)*N, u_hat, 1), &
 !!     !              'norm su_hat', dznrm2((N/2+1)*N, su_hat, 1), &

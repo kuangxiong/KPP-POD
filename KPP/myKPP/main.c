@@ -41,11 +41,10 @@ main(int argc, char* argv[])
         cM = eps * laml1 * laml1 + laml1*Amp*sqrt(theta*theta + 1.0)+1.0/tau;
         C = -laml1*Amp*sqrt(theta*theta + 1.0);
 
-
 /***************KPP_PW is used plane wave method to solver KPP problem*************/
-	KPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
+//	KPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
+//	KPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 /****call KPP_APOD function to solver KPP problem for lambda= laml1*****/
-//	}
 	KPP_APOD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 
     if(myrank ==0){

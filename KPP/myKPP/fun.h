@@ -30,7 +30,22 @@ void
 KPP_ComputePlane(int, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, complex*, int, int, long int, long int, MPI_Comm);
 
 void
+KPP_BuildPODMatrix(int , int , int , int , int, double , double , 
+				   double, double, double, complex *, complex*, complex*, double*, 
+				   double *, int , int );
+
+void
+KPP_BuildPODMatrix1(int , int , int , int , int, double , double , 
+				   double, double, double, complex *, complex *, complex *, 
+                   complex*, complex*, double*, double *, int , int );
+
+double 
+KPP_GetErrIndicator(int , int , int , double , double ,complex *, 
+                    complex*, complex *, complex *, complex *);
+
+void
 KPP_Build_FFTMatrix(int, int, int, complex*, int , int, complex*);
+
 
 void
 KPP_mpi_svd(int, int, int, complex*, double*, complex *, int, int);
@@ -44,4 +59,5 @@ KPP_Build_FFTMatrix1(int, int, int, complex*, complex*);
 int 
 KPP_GetPODNumber(double*, int, double);
 
-
+double 
+dnrm2_(int *, complex *, int *);

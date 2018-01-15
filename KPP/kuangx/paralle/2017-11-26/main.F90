@@ -11,7 +11,7 @@
      call system_clock(count_rate=clock_rate)
      call system_clock(count=tostime)
 
-     N = 400 
+     N = 10 
      laml = 0.0D+0
      lamr = 10.0D+0
 
