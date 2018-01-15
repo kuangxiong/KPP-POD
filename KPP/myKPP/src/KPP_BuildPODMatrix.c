@@ -13,7 +13,7 @@
 void
 KPP_BuildPODMatrix(int nPOD, int N, int localN, int local_0_start, int alloc_local, double eps, double theta, 
 				   double lam, double C, double Amp, complex *BN1,  complex *Firmx, complex *Varm, double *cosx, 
-				   double *sinx, int myrank, int nprocs)
+				   double *sinx, int myrank, int nprocs, MPI_Comm comm)
 {
 	int i, j, k, index[localN], N1, alpha, descA[9], ONE, ZERO, tmpN, tmpN1;
 	complex *BN, *BNx, *BNy, *BNlap, *CtmpV, *tmphat1, value;
@@ -42,8 +42,8 @@ KPP_BuildPODMatrix(int nPOD, int N, int localN, int local_0_start, int alloc_loc
 
 	CtmpV = calloc(alloc_local, sizeof(*CtmpV));
 	RtmpV = calloc(2 * alloc_local, sizeof(*RtmpV));
-	pford = fftw_mpi_plan_dft_r2c_2d(N, N, RtmpV, CtmpV, MPI_COMM_WORLD, FFTW_MEASURE);
-	pback = fftw_mpi_plan_dft_c2r_2d(N, N, CtmpV, RtmpV, MPI_COMM_WORLD, FFTW_MEASURE);
+	pford = fftw_mpi_plan_dft_r2c_2d(N, N, RtmpV, CtmpV, comm, FFTW_MEASURE);
+	pback = fftw_mpi_plan_dft_c2r_2d(N, N, CtmpV, RtmpV, comm, FFTW_MEASURE);
 
 	Bx = calloc(localN *N, sizeof(*Bx));
 	By = calloc(localN *N, sizeof(*By));
@@ -121,13 +121,13 @@ KPP_BuildPODMatrix(int nPOD, int N, int localN, int local_0_start, int alloc_loc
 //		for(j=0; j< N; j++)
 //			printf("%d\t%f&%f\n",myrank, tmphat1[localN*N+i*N+j]);
 //	}
-//	MPI_Barrier(MPI_COMM_WORLD);
+//	MPI_Barrier(comm);
 //    if(myrank==1){
 //	for(i=0; i< localN; i++)
 //		for(j=0; j< N; j++)
 //			printf("%d\t%f&%f\n",myrank, tmphat1[localN*N+i*N+j]);
 //	}
-//	MPI_Barrier(MPI_COMM_WORLD);
+//	MPI_Barrier(comm);
 /*******************compute eps*BN*BNlap+2*eps*lam*BN*BNx************************/
 	tmpN = N*N;
 	for(i=0; i< nPOD; i++){
@@ -234,7 +234,7 @@ KPP_BuildPODMatrix(int nPOD, int N, int localN, int local_0_start, int alloc_loc
 //		}
 //	}
 /***************************the part of t*******************************/
-	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Barrier(comm);
 	for(i=0; i< localN; i++){
 		for(j=0; j< N; j++){
 			Bx[i*N+j] = Amp * theta * sinx[j];
@@ -291,13 +291,13 @@ KPP_BuildPODMatrix(int nPOD, int N, int localN, int local_0_start, int alloc_loc
 //		for(j=0; j< N; j++)
 //			printf("%d\t%f&%f\n",myrank, RBBN[i*N+j]);
 //	}
-//	MPI_Barrier(MPI_COMM_WORLD);
+//	MPI_Barrier(comm);
 //    if(myrank==1){
 //	for(i=0; i< localN; i++)
 //		for(j=0; j< N; j++)
 //			printf("%d\t%f&%f\n",myrank, RBBN[i*N+j]);
 //	}
-//	MPI_Barrier(MPI_COMM_WORLD);
+//	MPI_Barrier(comm);
 //	if(myrank==0){
 //		for(i=0; i< nPOD; i++){
 //			for(j=0; j< nPOD; j++){

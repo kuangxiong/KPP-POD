@@ -16,7 +16,7 @@ main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 /***************initialize variables****************/
-    N = 10;
+    N = 40;
     laml = 0;
     lamr = 10;
     eps = 1.0;
@@ -45,7 +45,8 @@ main(int argc, char* argv[])
 //	KPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 //	KPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 /****call KPP_APOD function to solver KPP problem for lambda= laml1*****/
-	KPP_APOD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
+	KPP_POD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs);
+//	KPP_APOD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 
     if(myrank ==0){
         printf("lambda:%f\t, eps:%f\t, cM:%f\n", laml1, eps, cM);

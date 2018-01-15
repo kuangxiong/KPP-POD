@@ -71,14 +71,14 @@ KPP_GetErrIndicator(int nPOD, int localN, int N, double cost, double dt,complex 
     MPI_Allreduce(&ErrlocalNorm, &ErrNorm, ONE, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(&localNorm, &Norm, ONE, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     Errind = sqrt(ErrNorm/Norm);
-//    Errind = sqrt(Norm);
+//  Errind = sqrt(Norm);
     free(curu);
     free(preu);
     free(BN);
     free(tmpu);
     free(lgNotTMat);
     free(lgTMat);
-    printf("%e\n", Errind);
+//    printf("%e\n", Errind);
     return Errind;
 }
 

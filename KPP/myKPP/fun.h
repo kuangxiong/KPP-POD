@@ -26,13 +26,16 @@ KPP_PW(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOU
 void 
 KPP_APOD(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, int , int, MPI_Comm);
 
+void 
+KPP_POD(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, int , int);
+
 void
 KPP_ComputePlane(int, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, complex*, int, int, long int, long int, MPI_Comm);
 
 void
 KPP_BuildPODMatrix(int , int , int , int , int, double , double , 
 				   double, double, double, complex *, complex*, complex*, double*, 
-				   double *, int , int );
+				   double *, int , int, MPI_Comm);
 
 void
 KPP_BuildPODMatrix1(int , int , int , int , int, double , double , 
