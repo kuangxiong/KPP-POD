@@ -83,7 +83,7 @@ KPP_BuildPODMatrix(int nPOD, int N, int localN, int local_0_start, int alloc_loc
 //			&ONE, &ONE, descA, &ONE);	
 //	printf("hello:hello:%f&%f\n", value);
 /******************copy and symmetrize(different with zliu)*******************/
-    KPP_Build_FFTMatrix1(N, nPOD, localN, BNlap, tmphat1);
+    KPP_Build_FFTMatrix1(N, nPOD, localN, BNlap, tmphat1, comm);
 //	for(k=0;k<nPOD; k++)
 //		for(i = 0; i< localN; i++)
 //			for(j=0; j< N; j++)
@@ -115,7 +115,7 @@ KPP_BuildPODMatrix(int nPOD, int N, int localN, int local_0_start, int alloc_loc
 			}
 		}
 /******************copy and symmetrize(different with zliu)*******************/
-    KPP_Build_FFTMatrix1(N, nPOD, localN, BNx, tmphat1);
+    KPP_Build_FFTMatrix1(N, nPOD, localN, BNx, tmphat1, comm);
 //    if(myrank==0){
 //	for(i=0; i< localN; i++)
 //		for(j=0; j< N; j++)
@@ -329,13 +329,18 @@ KPP_BuildPODMatrix1(int nPOD, int N, int localN, int local_0_start, int alloc_lo
 				   double lam, double C, double Amp, complex *BN1,  
                    complex *NotTMat, complex *Tmat,  
                    complex *Firmx, complex *Varm, double *cosx, 
-				   double *sinx, int myrank, int nprocs)
+				   double *sinx, int myrank, int nprocs, MPI_Comm comm)
 {
-	int i, j, k, index[localN], N1, alpha, descA[9], ONE, ZERO, tmpN, tmpN1;
+	int i, j, k, index[localN], N1, alpha, descA[9], ONE, ZERO, tmpN, tmpN1, context, nprow, npcol;
 	complex *BN, *BNx, *BNy, *CtmpV, *tmphat1, value, *BNlap;
 	double *RBNx, *RBNy, *RBN, *RtmpV, *Bx, *By, *RBBN, *RBBNx, *RBBNy;
 	fftw_plan pford, pback;
 
+    nprow = nprocs;
+    npcol = 1;
+    Cblacs_pinfo(&myrank, &nprocs);
+    Cblacs_get(-1, 0, &context);
+    Cblacs_gridinit(&context, "Row", nprow, npcol);
 	ONE = 1;
 	ZERO = 0;
 
@@ -356,8 +361,8 @@ KPP_BuildPODMatrix1(int nPOD, int N, int localN, int local_0_start, int alloc_lo
 
 	CtmpV = calloc(alloc_local, sizeof(*CtmpV));
 	RtmpV = calloc(2 * alloc_local, sizeof(*RtmpV));
-	pford = fftw_mpi_plan_dft_r2c_2d(N, N, RtmpV, CtmpV, MPI_COMM_WORLD, FFTW_MEASURE);
-	pback = fftw_mpi_plan_dft_c2r_2d(N, N, CtmpV, RtmpV, MPI_COMM_WORLD, FFTW_MEASURE);
+	pford = fftw_mpi_plan_dft_r2c_2d(N, N, RtmpV, CtmpV, comm, FFTW_MEASURE);
+	pback = fftw_mpi_plan_dft_c2r_2d(N, N, CtmpV, RtmpV, comm, FFTW_MEASURE);
 
 	Bx = calloc(localN *N, sizeof(*Bx));
 	By = calloc(localN *N, sizeof(*By));
@@ -399,7 +404,7 @@ KPP_BuildPODMatrix1(int nPOD, int N, int localN, int local_0_start, int alloc_lo
 //			&ONE, &ONE, descA, &ONE);	
 //	printf("hello:hello:%f&%f\n", value);
 /******************copy and symmetrize(different with zliu)*******************/
-    KPP_Build_FFTMatrix1(N, nPOD, localN, BNlap, tmphat1);
+    KPP_Build_FFTMatrix1(N, nPOD, localN, BNlap, tmphat1, comm);
 //	for(k=0;k<nPOD; k++)
 //		for(i = 0; i< localN; i++)
 //			for(j=0; j< N; j++)
@@ -434,7 +439,7 @@ KPP_BuildPODMatrix1(int nPOD, int N, int localN, int local_0_start, int alloc_lo
 			}
 		}
 /******************copy and symmetrize(different with zliu)*******************/
-    KPP_Build_FFTMatrix1(N, nPOD, localN, BNx, tmphat1);
+    KPP_Build_FFTMatrix1(N, nPOD, localN, BNx, tmphat1, comm);
 //    if(myrank==0){
 //	for(i=0; i< localN; i++)
 //		for(j=0; j< N; j++)
@@ -560,7 +565,7 @@ KPP_BuildPODMatrix1(int nPOD, int N, int localN, int local_0_start, int alloc_lo
 //		}
 //	}
 /***************************the part of t*******************************/
-	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Barrier(comm);
 	for(i=0; i< localN; i++){
 		for(j=0; j< N; j++){
 			Bx[i*N+j] = Amp * theta * sinx[j];
@@ -634,9 +639,8 @@ KPP_BuildPODMatrix1(int nPOD, int N, int localN, int local_0_start, int alloc_lo
 //		}
 //	}
 
-#if 0
-#endif
 /****************transform real space RBBN to K space **************************/
+    Cblacs_gridexit(0);
 	free(Bx);
 	free(By);
 	free(RBBN);

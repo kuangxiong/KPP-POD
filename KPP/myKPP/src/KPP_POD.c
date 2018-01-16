@@ -34,22 +34,22 @@
  */
 /* ============================================================================*/
 void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt, DOUBLE t, 
-			  DOUBLE Amp, DOUBLE cM, DOUBLE C, DOUBLE y1, int myrank, int nprocs  
+			  DOUBLE Amp, DOUBLE cM, DOUBLE C, DOUBLE y1, int myrank, int nprocs, MPI_Comm comm  
 			  )
 {     
      long int alloc_local, localN, local_0_start, ncup;
-     double *u, tmax, cost, *S, *S1, gamma, gamma1, gamma2, cosx[N], sinx[N], h, *RtmpV, *uPOD, 
-            dT, errind, T, localerr, err;
+     double *u, cost, *S, *S1, cosx[N], sinx[N], h, *RtmpV, *uPOD, 
+             errind, localerr, err;
 	 
-	 complex *u_hat, *UP_hat, *gatherU, *gatherU1, testu_hat[N*(N/2+1)], *tmp4svd_hat,
+	 complex *u_hat, *gatherU, testu_hat[N*(N/2+1)], *tmp4svd_hat,
 			 *B, *B1, *BN1, *BN, *PODu0, *Firm, *Varm, *tmpFirm, *PODu, *CPODu,
-			 *CtmpV, *BNlap, alpha, tmpvalue, beta, *err_hat;
+			 *CtmpV, alpha, tmpvalue, beta, *err_hat;
      fftw_plan p1, p2;
      int i, k, j, niter = 0, ONE=1, N1, N2, nPOD, nPOD1, nPOD2,  tmpN, tmpN1;
 	 FILE *fp;
 
-//	 fp = fopen("solution.text","w");
-     alloc_local = fftw_mpi_local_size_2d(N, N/2+1, MPI_COMM_WORLD, &localN, &local_0_start);
+	 fp = fopen("PODerr.text","w");
+     alloc_local = fftw_mpi_local_size_2d(N, N/2+1, comm, &localN, &local_0_start);
      u_hat = calloc(localN*(N/2+1), sizeof(*u_hat));
      err_hat = calloc(localN*(N/2+1), sizeof(*err_hat));
      u = calloc(localN * N, sizeof(*u));
@@ -62,8 +62,8 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
      N1 = localN * (N/2+1);
 	 N2 = localN * N;
      /************get initial u and u_hat**************/
-     p1 = fftw_mpi_plan_dft_r2c_2d(N, N, RtmpV, CtmpV, MPI_COMM_WORLD, FFTW_MEASURE);
-     p2 = fftw_mpi_plan_dft_c2r_2d(N, N, CtmpV, RtmpV, MPI_COMM_WORLD, FFTW_MEASURE);
+     p1 = fftw_mpi_plan_dft_r2c_2d(N, N, RtmpV, CtmpV, comm, FFTW_MEASURE);
+     p2 = fftw_mpi_plan_dft_c2r_2d(N, N, CtmpV, RtmpV, comm, FFTW_MEASURE);
   
 	 for(i=0; i< localN; i++){
          for(j=0; j< N; j++){
@@ -71,7 +71,7 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
          }
      }
 
-     MPI_Barrier(MPI_COMM_WORLD);     
+     MPI_Barrier(comm);     
      fftw_execute(p1);
 	 tmpN = localN*(N/2+1);
 	 zcopy_(&tmpN, CtmpV, &ONE, u_hat, &ONE);
@@ -81,19 +81,14 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
 		sinx[i] = sin(2*PI*i*h);
 	 }
 /*************************************************/
-	 T = 0.0010;
-     tmax = 0.0008;
-     gamma = 0.999999999;
-     gamma1 = 0.999999999;
-     gamma2 = 0.999999999;
 	 ncup = (int)(tmax/dt)+2;
+     ncup = ncup/intval + 1;
      gatherU = calloc(N1*ncup, sizeof(*gatherU));
      tmp4svd_hat = calloc(localN*N*ncup, sizeof(*gatherU));
      S = calloc(ncup, sizeof(*S));
 	 B = calloc(localN*N*N*N, sizeof(*B));
     
 	 zcopy_(&N1,  u_hat, &ONE, gatherU, &ONE);
-
 	 k = 1;
      t = 0;
      while(t <= tmax)
@@ -101,20 +96,24 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
         niter = niter + 1;
         cost = cos(t);
         t = t + dt;
-        KPP_ComputePlane(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,localN, local_0_start,  MPI_COMM_WORLD);
-		zcopy_(&N1,  u_hat, &ONE, &gatherU[k * N1], &ONE);
+        
+        KPP_ComputePlane(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,localN, local_0_start,  comm);
+		if(k%intval ==0){
+            zcopy_(&N1,  u_hat, &ONE, &gatherU[(k/intval) * N1], &ONE);
+        }
 		k++;
      }
-//     MPI_Gather(u_hat, localN*(N/2+1), MPI_C_DOUBLE_COMPLEX, testu_hat , localN*(N/2+1), MPI_C_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD);
+//     MPI_Gather(u_hat, localN*(N/2+1), MPI_C_DOUBLE_COMPLEX, testu_hat , localN*(N/2+1), MPI_C_DOUBLE_COMPLEX, 0, comm);
 
-	 KPP_Build_FFTMatrix1(N, ncup, localN, gatherU, tmp4svd_hat);
+	 KPP_Build_FFTMatrix1(N, ncup, localN, gatherU, tmp4svd_hat, comm);
+     
      KPP_mpi_svd(ncup, N, localN, tmp4svd_hat, S, B, nprocs, myrank);
 	 k=0;
 	 if(myrank ==0)
 		 for(i=0; i< ncup; i++)
 			printf("S:%d\t%f\n",ncup,  S[i]);
 
-	nPOD = KPP_GetPODNumber(S, ncup, gamma);
+	nPOD = KPP_GetPODNumber(S, ncup, gamma1);
 //	if(myrank==0)
 //		printf("%d\t%d\n",ncup, nPOD);
 /********************get initial POD solution****************/
@@ -134,7 +133,18 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
 	if(myrank==0)
 		for(i=0; i< nPOD; i++)
 			printf("PODu0:%f&%f\n", PODu0[i]);
-
+//***************computing initial POD solution err*********/
+    tmpvalue = 1.0;
+    beta = 0;
+    zgemv_("N", &tmpN, &nPOD, &tmpvalue, BN, &tmpN, PODu0, &ONE, &beta, CPODu, &ONE);
+    for(i=0; i< localN; i++) 
+        for(j=0;  j< N/2+1; j++)
+           err_hat[i*(N/2+1)+j] = u_hat[i*(N/2+1)+j]-CPODu[i*(N/2+1)+j];
+    localerr = dnrm2_(&tmpN1, err_hat, &ONE);
+    localerr = localerr*localerr;
+    MPI_Allreduce(&localerr, &err, ONE, MPI_DOUBLE, MPI_SUM, comm);
+    if(myrank==0)
+       printf("initial POD err:%f\t%e\n", t, sqrt(err));
 /*************defined matrix for building POD matrix************/
     Firm = calloc(nPOD*nPOD, sizeof(*Firm));
     tmpFirm = calloc(nPOD*nPOD, sizeof(*tmpFirm));
@@ -143,7 +153,7 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
 
     KPP_BuildPODMatrix(nPOD, N, localN, local_0_start, alloc_local, eps,
 					   theta, lam, C, Amp, BN1, Firm, Varm, cosx, sinx, myrank, 
-					   nprocs, MPI_COMM_WORLD);
+					   nprocs, comm);
 //	KPP_BuildPODMatrix1(nPOD, N, localN, local_0_start, alloc_local, eps,
 //					   theta, lam, C, Amp, BN1, NotTMat, TMat, Firm, Varm, cosx, sinx, myrank, 
 //					   nprocs);
@@ -151,7 +161,7 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
 	tmpN1 = 2*localN*(N/2+1);
     alpha = dt;
     beta = 0.0;
-//	while(t <= T) 
+	while(t <= T) 
     {
     	for(i=0; i< nPOD; i++)
     		for(j=0; j< nPOD; j++)
@@ -163,34 +173,23 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
     	for(i=0; i< nPOD; i++){
     		PODu[i] = PODu0[i] + PODu[i];
     	}
-
-//    	if(myrank==0){
-//    		for(i=0; i< nPOD; i++)
-//    			printf("%f&%f\n", PODu[i]);
-//    	}
-//		/*****************transform POD sulution to  plane solution************/
+	/*****************transform POD sulution to  plane solution************/
         tmpvalue = 1.0;
         beta = 0;
         zgemv_("N", &tmpN, &nPOD, &tmpvalue, BN, &tmpN, PODu, &ONE, &beta, CPODu, &ONE);
         /***************************PW solution********************************/
-        printf("1111::%f\n", cost);
         KPP_ComputePlane(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,
-                localN, local_0_start,  MPI_COMM_WORLD);
-        localerr = dnrm2_(&tmpN1, u_hat, &ONE);
-//        localerr = localerr*localerr;
-        printf("11localerr:%f\n", localerr);
+                localN, local_0_start,  comm);
         /***************************computing err*****************************/
         for(i=0; i< localN; i++) 
             for(j=0;  j< N/2+1; j++)
-               err_hat[i*(N/2+1)+j] = u_hat[i*(N/2+1)+j];//-CPODu[i*(N/2+1)+j];
-        //        err_hat[i*(N/2+1)+j] = CPODu[i*(N/2+1)+j];
-        MPI_Barrier(MPI_COMM_WORLD);
-        localerr = dnrm2_(&tmpN1, u_hat, &ONE);
-//        localerr = localerr*localerr;
-        printf("22localerr:%f\n", localerr);
-//        MPI_Allreduce(&localerr, &err, ONE, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-//        if(myrank==0)
-//            printf("err:%f\n", sqrt(err));
+               err_hat[i*(N/2+1)+j] = u_hat[i*(N/2+1)+j]-CPODu[i*(N/2+1)+j];
+        MPI_Barrier(comm);
+        localerr = dnrm2_(&tmpN1, err_hat, &ONE);
+        localerr = localerr*localerr;
+        MPI_Allreduce(&localerr, &err, ONE, MPI_DOUBLE, MPI_SUM, comm);
+        if(myrank==0)
+            fprintf(fp, "%f\t%f\n", t, sqrt(err));
 
 //		zcopy_(&tmpN, CPODu, &ONE, CtmpV, &ONE);
 //		fftw_execute(p2);
@@ -202,15 +201,14 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
             PODu0[i] = PODu[i];
         }
     }
-
-	 free(gatherU);
-	 free(tmp4svd_hat);
-	 free(S);
-	 free(B);
-	 free(CtmpV);
-	 free(RtmpV);
-	 free(u_hat);
-	 free(CPODu);
-	 free(PODu);
-	 free(PODu0);
+	free(gatherU);
+	free(tmp4svd_hat);
+	free(S);
+	free(B);
+	free(CtmpV);
+	free(RtmpV);
+	free(u_hat);
+	free(CPODu);
+	free(PODu);
+	free(PODu0);
 }

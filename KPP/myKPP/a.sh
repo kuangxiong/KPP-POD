@@ -7,5 +7,5 @@
 #!/bin/bash
 make clean
 make main
-mpirun -np 2 ./main
+mpirun -np 4 ./main
 

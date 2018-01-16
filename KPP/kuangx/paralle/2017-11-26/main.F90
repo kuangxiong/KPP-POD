@@ -11,14 +11,14 @@
      call system_clock(count_rate=clock_rate)
      call system_clock(count=tostime)
 
-     N = 10 
+     N = 40 
      laml = 0.0D+0
      lamr = 10.0D+0
 
      eps = 1.0D+0
      tau = 1.0D+0
      theta = 1.0D+0
-     dt = 0.00001 
+     dt = 1.0e-6
      Amp = 1.0D+0
      vaeps = 5e-3
 

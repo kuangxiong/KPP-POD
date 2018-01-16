@@ -1,8 +1,8 @@
 #########################################################################
 # File Name: a.sh
 # Author:kuangxiong 
-# mail: kuangxiong@lsec.cc.ac.cn
-# Created Time: 2017年12月27日 星期三 09时42分42秒
+# mail:kuangxiong@lsec.cc.ac.cn 
+# Created Time: 2018年01月16日 星期二 18时46分43秒
 #########################################################################
 #!/bin/bash
 make clean

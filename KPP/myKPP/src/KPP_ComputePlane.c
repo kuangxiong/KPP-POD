@@ -46,10 +46,7 @@ void KPP_ComputePlane(int N, DOUBLE t, DOUBLE dt, DOUBLE C, DOUBLE Amp, DOUBLE l
          DOUBLE eps, DOUBLE cost, complex *u_hat, int myrank, int nprocs, long int local_n0, 
          long int local_0_start, MPI_Comm comm)
 {   
-//    complex *ux_hat, *uy_hat, *rhs_hat, *localU, *localD, *tmpu_hat, *tmp_hat, *tmplocalL, *tmplocalR, *tmpL, *tmpR, a, b;
-    complex ux_hat[local_n0*(N/2+1)], uy_hat[local_n0*(N/2+1)], rhs_hat[local_n0*(N/2+1)], localU[local_n0*(N/2+1)], 
-			localD[N/2+1], tmpu_hat[local_n0*(N/2+1)], tmp_hat[local_n0*(N/2+1)], tmplocalL[local_n0], 
-			tmplocalR[local_n0], tmpL[N], tmpR[N], a, b;
+    complex *ux_hat, *uy_hat, *rhs_hat, *localU, *localD, *tmpu_hat, *tmp_hat, *tmplocalL, *tmplocalR, *tmpL, *tmpR, a, b;
     int i, j, k, n, tmpi, tmpj, befRank, nextRank, ONE, Index[local_n0];
     MPI_Status status;
 
@@ -57,17 +54,17 @@ void KPP_ComputePlane(int N, DOUBLE t, DOUBLE dt, DOUBLE C, DOUBLE Amp, DOUBLE l
 //	printf("lamlam:%f\n", lam);
 
     ONE = 1;
-//    tmpu_hat = calloc(local_n0 * (N/2 + 1), sizeof(*tmpu_hat));
-//    tmp_hat = calloc(local_n0 * (N/2 + 1), sizeof(*tmp_hat));
-//    ux_hat = calloc(local_n0 * (N/2 + 1), sizeof(*ux_hat));
-//    uy_hat = calloc(local_n0 * (N/2 + 1), sizeof(*uy_hat));
-//    rhs_hat = calloc(local_n0 * (N/2 + 1), sizeof(*rhs_hat));
-//    localU = calloc(N/2 + 1, sizeof(*localU));
-//    localD = calloc(N/2 + 1, sizeof(*localD));
-//    tmplocalL = calloc(local_n0, sizeof(*tmplocalL));
-//    tmplocalR = calloc(local_n0, sizeof(*tmplocalR));
-//    tmpL = calloc(N, sizeof(*tmpL));
-//    tmpR = calloc(N, sizeof(*tmpR));
+    tmpu_hat = calloc(local_n0 * (N/2 + 1), sizeof(*tmpu_hat));
+    tmp_hat = calloc(local_n0 * (N/2 + 1), sizeof(*tmp_hat));
+    ux_hat = calloc(local_n0 * (N/2 + 1), sizeof(*ux_hat));
+    uy_hat = calloc(local_n0 * (N/2 + 1), sizeof(*uy_hat));
+    rhs_hat = calloc(local_n0 * (N/2 + 1), sizeof(*rhs_hat));
+    localU = calloc(N/2 + 1, sizeof(*localU));
+    localD = calloc(N/2 + 1, sizeof(*localD));
+    tmplocalL = calloc(local_n0, sizeof(*tmplocalL));
+    tmplocalR = calloc(local_n0, sizeof(*tmplocalR));
+    tmpL = calloc(N, sizeof(*tmpL));
+    tmpR = calloc(N, sizeof(*tmpR));
 //     
     for(i=0; i< local_n0; i++){
         tmplocalL[i] = conj(u_hat[i*(N/2+1)+1]);
@@ -182,11 +179,11 @@ void KPP_ComputePlane(int N, DOUBLE t, DOUBLE dt, DOUBLE C, DOUBLE Amp, DOUBLE l
         for(i=0; i<local_n0; i++){
             for(j=0; j< N/2+1; j++){
                 if(Index[i]< N/2+1){
-                    u_hat[i*(N/2+1)+j] = 1.0/(4*PI*PI*(Index[i]*Index[i]+j*j)*eps*dt+1)*
+                    u_hat[i*(N/2+1)+j] = -(4*PI*PI*(Index[i]*Index[i]+j*j)*eps*dt)*u_hat[i*(N/2+1)+j]+
                                           (u_hat[i*(N/2+1)+j]+ dt * rhs_hat[i*(N/2+1)+j]);
                 }
                 else{
-                    u_hat[i*(N/2+1)+j] = 1.0/(4*PI*PI*((Index[i]-N)*(Index[i]-N)+j*j)*eps*dt+1)*
+                    u_hat[i*(N/2+1)+j] = -(4*PI*PI*((Index[i]-N)*(Index[i]-N)+j*j)*eps*dt)*u_hat[i*(N/2+1)+j]+
                                           (u_hat[i*(N/2+1)+j]+ dt * rhs_hat[i*(N/2+1)+j]);
                 }
             }     
@@ -197,15 +194,15 @@ void KPP_ComputePlane(int N, DOUBLE t, DOUBLE dt, DOUBLE C, DOUBLE Amp, DOUBLE l
 //				u_hat[i*(N/2+1)+j] = u_hat[i*(N/2+1)+j];
 //	if(myrank ==0)
 //		printf("googd:%e&%e\t%e&%e\n", uy_hat[1*(N/2+1)+N/2-1], u_hat[1*(N/2+1)+N/2-1]);
-//       free(tmpu_hat);
-//       free(tmp_hat);
-//       free(ux_hat);
-//	   free(uy_hat);
-//	   free(rhs_hat);
-//	   free(localU);
-//	   free(localD);
-//	   free(tmplocalL);
-//	   free(tmplocalR);
-//	   free(tmpL);
-//	   free(tmpR);
+   free(tmpu_hat);
+   free(tmp_hat);
+   free(ux_hat);
+   free(uy_hat);
+   free(rhs_hat);
+   free(localU);
+   free(localD);
+   free(tmplocalL);
+   free(tmplocalR);
+   free(tmpL);
+   free(tmpR);
 }

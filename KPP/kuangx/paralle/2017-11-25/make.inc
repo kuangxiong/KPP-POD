@@ -1,5 +1,5 @@
-LIBS_FFT = -L /opt/fftw/fftw-3/lib -lfftw3
-LIBS_LAPACK = -llapack -lblas -lpthread
+LIBS_FFT = -L /share/home/kuangx/opt/fftw/lib -lfftw3
+LIBS_LAPACK = -L/share/home/kuangx/opt/lapack/lib -llapack -lblas -lpthread
 LIBS = $(LIBS_FFT) $(LIBS_LAPACK)
 CC := gfortran
 MAKEROOT = ~/KPP/kuangx/paralle/2017-11-25/

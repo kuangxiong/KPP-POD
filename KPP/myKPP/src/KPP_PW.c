@@ -35,7 +35,7 @@
 /* ============================================================================*/
 void KPP_PW(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt, DOUBLE t, 
 			  DOUBLE Amp, DOUBLE cM, DOUBLE C, DOUBLE y1, int myrank, int nprocs, 
-			  MPI_Comm MPI_COMM_WROLD)
+			  MPI_Comm comm)
 {     
      int N1 = 1000, beta;
      long int alloc_local, localN, local_0_start;
@@ -57,15 +57,15 @@ void KPP_PW(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt, 
 /******************************************************************************
  *              computing for Coarse grid
  * ***************************************************************************/
-     alloc_local = fftw_mpi_local_size_2d(N, N/2+1, MPI_COMM_WORLD, &localN, &local_0_start);
+     alloc_local = fftw_mpi_local_size_2d(N, N/2+1, comm, &localN, &local_0_start);
      u_hat = calloc(localN*(N/2+1), sizeof(*u_hat));
      u = calloc(localN * N, sizeof(*u));
      
 	 CtmpV = calloc(alloc_local, sizeof(*CtmpV));
      RtmpV = calloc(2 * alloc_local, sizeof(*RtmpV));
      /************get initial u and u_hat**************/
-     p1 = fftw_mpi_plan_dft_r2c_2d(N, N, RtmpV, CtmpV, MPI_COMM_WORLD, FFTW_MEASURE);
-     p2 = fftw_mpi_plan_dft_c2r_2d(N, N, CtmpV, RtmpV, MPI_COMM_WORLD, FFTW_MEASURE);
+     p1 = fftw_mpi_plan_dft_r2c_2d(N, N, RtmpV, CtmpV, comm, FFTW_MEASURE);
+     p2 = fftw_mpi_plan_dft_c2r_2d(N, N, CtmpV, RtmpV, comm, FFTW_MEASURE);
   
 
 	 for(i=0; i< localN; i++){
@@ -74,7 +74,7 @@ void KPP_PW(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt, 
          }
      }
 
-     MPI_Barrier(MPI_COMM_WORLD);     
+     MPI_Barrier(comm);     
      fftw_execute(p1);
 	 tmpN = localN*(N/2+1);
 	 zcopy_(&tmpN, CtmpV, &ONE, u_hat, &ONE);
@@ -86,15 +86,15 @@ void KPP_PW(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt, 
 /****************************************************************************
  *           computing for Fine Grid
  * **********************************************************************/
-     alloc_local1 = fftw_mpi_local_size_2d(N1, N1/2+1, MPI_COMM_WORLD, &localN1, &local_0_start1);
+     alloc_local1 = fftw_mpi_local_size_2d(N1, N1/2+1, comm, &localN1, &local_0_start1);
      u_hat1 = calloc(localN1*(N1/2+1), sizeof(*u_hat1));
      u1 = calloc(localN1 * N1, sizeof(*u1));
      
 	 CtmpV1 = calloc(alloc_local1, sizeof(*CtmpV1));
      RtmpV1 = calloc(2 * alloc_local1, sizeof(*RtmpV1));
      /************get initial u and u_hat**************/
-     Finep1 = fftw_mpi_plan_dft_r2c_2d(N1, N1, RtmpV1, CtmpV1, MPI_COMM_WORLD, FFTW_MEASURE);
-     Finep2 = fftw_mpi_plan_dft_c2r_2d(N1, N1, CtmpV1, RtmpV1, MPI_COMM_WORLD, FFTW_MEASURE);
+     Finep1 = fftw_mpi_plan_dft_r2c_2d(N1, N1, RtmpV1, CtmpV1, comm, FFTW_MEASURE);
+     Finep2 = fftw_mpi_plan_dft_c2r_2d(N1, N1, CtmpV1, RtmpV1, comm, FFTW_MEASURE);
   
 
 	 for(i=0; i< localN1; i++){
@@ -103,7 +103,7 @@ void KPP_PW(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt, 
          }
      }
 
-     MPI_Barrier(MPI_COMM_WORLD);     
+     MPI_Barrier(comm);     
      fftw_execute(Finep1);
 	 tmpN = localN1*(N1/2+1);
 	 zcopy_(&tmpN, CtmpV1, &ONE, u_hat1, &ONE);
@@ -123,8 +123,8 @@ void KPP_PW(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt, 
         niter = niter + 1;
         cost = cos(t);
         t = t + dt;
-        KPP_ComputePlane(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,localN, local_0_start,  MPI_COMM_WORLD);
-        KPP_ComputePlane(N1, t, dt, C, Amp, lam, theta, eps, cost, u_hat1, myrank, nprocs,localN1, local_0_start1,  MPI_COMM_WORLD);
+        KPP_ComputePlane(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,localN, local_0_start,  comm);
+        KPP_ComputePlane(N1, t, dt, C, Amp, lam, theta, eps, cost, u_hat1, myrank, nprocs,localN1, local_0_start1, comm);
 		k++;
      }
      
@@ -153,8 +153,8 @@ void KPP_PW(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt, 
         }
      }
      tmpN = localN*N;
-     MPI_Reduce(&localsum, &sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-     MPI_Reduce(&localself, &selfsum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+     MPI_Reduce(&localsum, &sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm);
+     MPI_Reduce(&localself, &selfsum, 1, MPI_DOUBLE, MPI_SUM, 0, comm);
      if(myrank==0)
         printf("%d\t%f\n", beta, sqrt(sum)/sqrt(selfsum));
 

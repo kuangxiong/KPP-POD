@@ -16,13 +16,13 @@ main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 /***************initialize variables****************/
-    N = 40;
+    N = 400;
     laml = 0;
     lamr = 10;
     eps = 1.0;
     tau = 1.0;
     theta = 1.0;
-    dt = 0.00001;
+    dt = 0.000001;
     Amp = 1.0;
     vaeps = 5e-3;
 /***************************************************/
@@ -37,16 +37,16 @@ main(int argc, char* argv[])
 		printf("The convergence criteria for the outer loop:%f\n", vaeps);
 	}
 /*************compute c_M****************/
-        laml1 = lamr - (sqrt(5.0)-1)/2*(lamr-laml);
-        cM = eps * laml1 * laml1 + laml1*Amp*sqrt(theta*theta + 1.0)+1.0/tau;
-        C = -laml1*Amp*sqrt(theta*theta + 1.0);
+    laml1 = lamr - (sqrt(5.0)-1)/2*(lamr-laml);
+    cM = eps * laml1 * laml1 + laml1*Amp*sqrt(theta*theta + 1.0)+1.0/tau;
+    C = -laml1*Amp*sqrt(theta*theta + 1.0);
 
 /***************KPP_PW is used plane wave method to solver KPP problem*************/
 //	KPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 //	KPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 /****call KPP_APOD function to solver KPP problem for lambda= laml1*****/
-	KPP_POD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs);
-//	KPP_APOD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
+//	KPP_POD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs);
+	KPP_APOD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 
     if(myrank ==0){
         printf("lambda:%f\t, eps:%f\t, cM:%f\n", laml1, eps, cM);

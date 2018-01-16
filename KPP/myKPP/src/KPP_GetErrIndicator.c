@@ -12,7 +12,7 @@
 
 double 
 KPP_GetErrIndicator(int nPOD, int localN, int N, double cost, double dt,complex *curPOD, 
-        complex *prePOD, complex *BN1, complex *NotTMat, complex *TMat)
+        complex *prePOD, complex *BN1, complex *NotTMat, complex *TMat, MPI_Comm comm)
 {
     double Errind, ErrlocalNorm, ErrNorm, localNorm, Norm ;
     int i, j, k, tmpN, tmpM, ONE = 1;
@@ -68,10 +68,9 @@ KPP_GetErrIndicator(int nPOD, int localN, int N, double cost, double dt,complex 
     ErrlocalNorm = ErrlocalNorm*ErrlocalNorm;
     localNorm = dnrm2_(&tmpN, preu, &ONE);
     localNorm = localNorm*localNorm;
-    MPI_Allreduce(&ErrlocalNorm, &ErrNorm, ONE, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(&localNorm, &Norm, ONE, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&ErrlocalNorm, &ErrNorm, ONE, MPI_DOUBLE, MPI_SUM, comm);
+    MPI_Allreduce(&localNorm, &Norm, ONE, MPI_DOUBLE, MPI_SUM, comm);
     Errind = sqrt(ErrNorm/Norm);
-//  Errind = sqrt(Norm);
     free(curu);
     free(preu);
     free(BN);

@@ -11,7 +11,6 @@ subroutine KPP_ComputePlane(pi, cost, dt, N, C, Amp, lam, theta, eps, u_hat,&
                      /2*dcmplx(1.0D+0,-theta*cost))*u_hat(i, j-1)&
                      + (pi*(i - 1)*dcmplx(-theta*cost, 1.0D+0)&
                      +lam/2*dcmplx(1.0D+0, theta * cost)) * u_hat(i, j+1))
-!       write(*,*), ux_hat(i,j)
       end do
     end do
 
@@ -48,7 +47,6 @@ subroutine KPP_ComputePlane(pi, cost, dt, N, C, Amp, lam, theta, eps, u_hat,&
                     *u_hat(i + 1, j))
       end do
     end do
-!    write(*,*)'good', u_hat(N/2-1, 2), u_hat(N/2+1,2) 
 
     do j = N/2 + 2, N
       do i = 2, N/2
@@ -57,7 +55,6 @@ subroutine KPP_ComputePlane(pi, cost, dt, N, C, Amp, lam, theta, eps, u_hat,&
                        *u_hat(i + 1, j))
       end do
     end do
-!    write(*,*)"hello", uy_hat(2,N)
 
     uy_hat(1, 1) = dcmplx(0.0D+0, 0.0D+0)
     do j = 2, N/2
@@ -88,11 +85,12 @@ subroutine KPP_ComputePlane(pi, cost, dt, N, C, Amp, lam, theta, eps, u_hat,&
     do i = 1, N/2 + 1
       uy_hat(i, N/2 + 1) = dcmplx(0.0D+0, 0.0D+0)
     end do
+
     do j = 1, N
       do i = 1, N/2
         rhs_hat(i, j) = ux_hat(i, j) + uy_hat(i, j) + &
                       dcmplx(C, 4*pi*lam*eps*(i-1))*u_hat(i, j)
- !       rhs_hat(i, j) =  uy_hat(i, j)
+ !       rhs_hat(i, j) =  uy_hat(i, j) 
       end do
     end do
     i = N/2 + 1
@@ -113,10 +111,7 @@ subroutine KPP_ComputePlane(pi, cost, dt, N, C, Amp, lam, theta, eps, u_hat,&
       forall(i = 1:N/2 + 1)
         u_hat(i,j)= 1.0D+0/(4*pi*pi*((i-1)*(i-1)+(j-1-N)*(j-1-N))&
                     *eps*dt+1)*(u_hat(i,j) + dt*rhs_hat(i,j))
-      
-
-       end forall
+      end forall
     end forall
-!    write(*,*)"gg", uy_hat(N/2,2), u_hat(N/2,2)
     end 
       

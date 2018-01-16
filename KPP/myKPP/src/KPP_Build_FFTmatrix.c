@@ -12,7 +12,7 @@
 
 
 void KPP_Build_FFTMatrix(int N, int ncup, int localN, complex *mpiUP_hat, 
-                    int myrank, int nprocs, complex *tmp_hat1)
+                    int myrank, int nprocs, complex *tmp_hat1, MPI_Comm comm)
 {
     int i, j, k, dest1, dest2, N1, N2, N3;
     complex tmp_v[localN *(N/2-1)*ncup];
@@ -50,14 +50,14 @@ void KPP_Build_FFTMatrix(int N, int ncup, int localN, complex *mpiUP_hat,
         for(i = 1; i<localN; i++){
           MPI_Sendrecv(&tmp_v[k * N3 + 0+i * (N/2-1)], N/2-1, MPI_COMPLEX, dest1, 991,
                        &tmp_hat1[k *N1 + N/2 + 1 + (localN - i) * N], N/2-1, MPI_COMPLEX,
-                       dest1, 991, MPI_COMM_WORLD, &status);
+                       dest1, 991, comm, &status);
         }
     }
     
     for(k=0; k<ncup; k++){
          MPI_Sendrecv(&tmp_v[k*N3 + 0], N/2-1, MPI_COMPLEX, dest2, 992,
                       &tmp_hat1[k*N1 + 0], N/2-1, MPI_COMPLEX,
-                     dest2, 992, MPI_COMM_WORLD, &status);
+                     dest2, 992, comm, &status);
     }
 
     if(myrank==0 || myrank==nprocs/2){

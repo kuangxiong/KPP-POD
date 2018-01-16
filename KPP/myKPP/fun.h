@@ -17,6 +17,15 @@
 #define PI 3.1415926535
 #define DOUBLE double
 
+static double gamma1 = 0.9999999;
+static double gamma2 = 0.9999999;
+static double gamma3 = 0.9999999;
+static int intval = 5;  //collect PW solution between two interval time
+static double T = 0.50;  //total time
+static double tmax = 0.008; // the length for collecting PW solution 
+static double dT = 0.001; // the length for  PW solution for updating POD Matrix
+static double errflag = 0.002; //errindicator threshold
+
 void
 zcopy_(int*, complex*, int*, complex*, int*);
 
@@ -27,7 +36,7 @@ void
 KPP_APOD(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, int , int, MPI_Comm);
 
 void 
-KPP_POD(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, int , int);
+KPP_POD(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, int , int, MPI_Comm);
 
 void
 KPP_ComputePlane(int, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, complex*, int, int, long int, long int, MPI_Comm);
@@ -40,14 +49,14 @@ KPP_BuildPODMatrix(int , int , int , int , int, double , double ,
 void
 KPP_BuildPODMatrix1(int , int , int , int , int, double , double , 
 				   double, double, double, complex *, complex *, complex *, 
-                   complex*, complex*, double*, double *, int , int );
+                   complex*, complex*, double*, double *, int , int , MPI_Comm);
 
 double 
 KPP_GetErrIndicator(int , int , int , double , double ,complex *, 
-                    complex*, complex *, complex *, complex *);
+                    complex*, complex *, complex *, complex *, MPI_Comm);
 
 void
-KPP_Build_FFTMatrix(int, int, int, complex*, int , int, complex*);
+KPP_Build_FFTMatrix(int, int, int, complex*, int , int, complex*, MPI_Comm);
 
 
 void
@@ -57,7 +66,7 @@ void
 KPP_GetInitialPOD(int, int , int, complex *, complex *, complex *, int, int);
 
 void
-KPP_Build_FFTMatrix1(int, int, int, complex*, complex*);
+KPP_Build_FFTMatrix1(int, int, int, complex*, complex*, MPI_Comm);
 
 int 
 KPP_GetPODNumber(double*, int, double);
