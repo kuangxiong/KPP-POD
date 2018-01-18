@@ -165,7 +165,7 @@ void KPP_APOD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt
 		/***transform POD sulution to  plane solution******/
         tmpvalue = 1.0;
         tmpN = localN*(N/2+1);
-        zgemv_("N", &tmpN1, &nPOD, &tmpvalue, BN, &tmpN, PODu, &ONE, &beta, CPODu, &ONE);
+        zgemv_("N", &tmpN, &nPOD, &tmpvalue, BN, &tmpN, PODu, &ONE, &beta, CPODu, &ONE);
         /**************************************************/
         KPP_ComputePlane(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,localN, local_0_start,  comm1);
         for(i=0; i< localN; i++){
@@ -188,16 +188,20 @@ void KPP_APOD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt
 //      /***************************Updata POD Matrix**************************/
         tmpN = localN*(N/2+1);
         if(myrank==0)
-            printf(fp1, "%f\t%f\n", t, errind);
+            fprintf(fp1, "%f\t%f\n", t, errind);
         if(errind > errflag){
+        
             tmpvalue = 1.0;
             // transfer POD solution to PW solution 
-            zgemv_("N", &tmpN, &nPOD, &tmpvalue, BN, &tmpN, PODu, &ONE, &beta, u_hat, &ONE);
+            zgemv_("N", &tmpN, &nPOD, &tmpvalue, BN, &tmpN, PODu, &ONE, &beta, CPODu, &ONE);
+//#if 0
             /*******************free Matrix***************************/
             free(gatherU); free(tmp4svd_hat); free(S); free(B); free(TMat);
             free(NotTMat); free(Firm); free(Varm); free(tmpFirm); free(PODu0);
             free(PODu); free(BN); 
             /*********************************************************/
+//            if(myrank==0)
+//                printf("111111111\n");
             MPI_Barrier(comm1);
             
             ncup = dT/dt +2;  
@@ -215,35 +219,38 @@ void KPP_APOD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt
                     printf("can i get here\n");
                     goto stop;
                 }
-                KPP_ComputePlane(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,
+                KPP_ComputePlane(N, t, dt, C, Amp, lam, theta, eps, cost, CPODu, myrank, nprocs,
                                 localN, local_0_start,  comm1);
                 if(k%intval==0)
-    		        zcopy_(&N1, u_hat, &ONE, &gatherU[(k/intval) * N1], &ONE);
-                /********************computing error of POD solution*******************/
-		        /***transform POD sulution to  plane solution******/
-                tmpvalue = 1.0;
-                tmpN = localN*(N/2+1);
-                zgemv_("N", &tmpN1, &nPOD, &tmpvalue, BN, &tmpN, PODu, &ONE, &beta, CPODu, &ONE);
-                /**************************************************/
+    		        zcopy_(&N1, CPODu, &ONE, &gatherU[(k/intval) * N1], &ONE);
+                /*******************computing error*******************************/
                 KPP_ComputePlane(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,localN, local_0_start,  comm1);
-                for(i=0; i< localN; i++){
-                    for(j=0; j< N/2+1; j++){
-                        err_hat[i*(N/2+1)+j] = CPODu[i*(N/2+1)+j] - u_hat[i*(N/2+1)+j];   
-                    }
-                }
-                localerr = dnrm2_(&tmpN, err_hat, &ONE);
-                localerr = localerr * localerr;
-                MPI_Allreduce(&localerr, &err, ONE, MPI_DOUBLE, MPI_SUM, comm1);
-                if(myrank==0)
-                    fprintf(fp, "%f\t%f\n", t, sqrt(err));
-        /*********************************************************************/
+//                for(i=0; i< localN; i++){
+//                    for(j=0; j< N/2+1; j++){
+//                        err_hat[i*(N/2+1)+j] = CPODu[i*(N/2+1)+j] - u_hat[i*(N/2+1)+j];   
+//                    }
+//                }
+//                localerr = dnrm2_(&tmpN, err_hat, &ONE);
+//                localerr = localerr * localerr;
+//                MPI_Allreduce(&localerr, &err, ONE, MPI_DOUBLE, MPI_SUM, comm1);
+//                if(myrank==0)
+//                    fprintf(fp, "%f\t%f\n", t, sqrt(err));
+              /*********************************************************************/
 		        k++;                   
             }
 //          printf("hello , i am here:%d\t%d\n", ncup, k/intval);
             S1 = calloc(ncup, sizeof(*S1));
 	        B1 = calloc(localN*N*N*N, sizeof(*B1));
 	        KPP_Build_FFTMatrix1(N, ncup, localN, gatherU, tmp4svd_hat, comm1);
+            
+            MPI_Barrier(comm1);
+            
+            if(myrank==0)
+                printf("22222222\n");
             KPP_mpi_svd(ncup, N, localN, tmp4svd_hat, S1, B1, nprocs, myrank);
+            if(myrank==0)
+                printf("3333333\n");
+
             nPOD1 = KPP_GetPODNumber(S1, ncup, gamma1);
             /**************assemble the mixed Matrix for SVD*****/
             mixMat = calloc((nPOD+nPOD1)*localN*N, sizeof(*mixMat));
@@ -257,7 +264,12 @@ void KPP_APOD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt
             S = calloc(nPOD+nPOD1, sizeof(*S));
 	        B = calloc(localN*N*N*N, sizeof(*B)); 
 
+            if(myrank==0)
+                printf("444444444\n");
+//          printf("hello , i am here:%d\t%d\n", ncup, k/intval);
             KPP_mpi_svd(nPOD+nPOD1, N, localN, mixMat, S, B, nprocs, myrank); 
+            if(myrank==0)
+                printf("55555555\n");
             nPOD = KPP_GetPODNumber(S, nPOD+nPOD1, gamma1);
 //            if(myrank==0)
 //                for(i=0; i< nPOD; i++)
@@ -287,9 +299,11 @@ void KPP_APOD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt
 	        KPP_BuildPODMatrix1(nPOD, N, localN, local_0_start, alloc_local, eps, theta, lam, 
                                 C, Amp, BN1, NotTMat, TMat, Firm, Varm, cosx, sinx, myrank, 
 					            nprocs, comm1);
-            KPP_GetInitialPOD(N, localN, nPOD, u_hat, BN1, PODu, myrank, nprocs);    
+            KPP_GetInitialPOD(N, localN, nPOD, CPODu, BN1, PODu, myrank, nprocs);    
+//#endif
         }
-//      /****************************************************************************/
+
+      /****************************************************************************/
         for(i=0; i< nPOD; i++){
             PODu0[i] = PODu[i];
         }

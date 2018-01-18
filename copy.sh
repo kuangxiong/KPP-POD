@@ -7,6 +7,6 @@
 #!/bin/bash
 scp -r lssc4:KPP ./
 git add .
-git commit -m "KPP-POD201801116"
+git commit -m "KPP-POD201801118"
 git push origin master
 git log

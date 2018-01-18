@@ -6,6 +6,7 @@
  * @date 2017-11-25
  *****************************************************/
 #include"fun.h"
+
 int 
 main(int argc, char* argv[])
 {
@@ -13,10 +14,12 @@ main(int argc, char* argv[])
     DOUBLE eps, tau, theta, dt, laml, lamr, laml1, vaeps, y1, y2, Amp, t, cM, C;
     
     MPI_Init(&argc, &argv);
+//    MPI_Comm *comm;
+//    MPI_Comm_dup(MPI_COMM_WORLD, comm);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 /***************initialize variables****************/
-    N = 400;
+    N = 60;
     laml = 0;
     lamr = 10;
     eps = 1.0;
@@ -43,9 +46,9 @@ main(int argc, char* argv[])
 
 /***************KPP_PW is used plane wave method to solver KPP problem*************/
 //	KPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
-//	KPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
+//	testKPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 /****call KPP_APOD function to solver KPP problem for lambda= laml1*****/
-//	KPP_POD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs);
+//	KPP_POD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 	KPP_APOD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 
     if(myrank ==0){
@@ -54,7 +57,6 @@ main(int argc, char* argv[])
 		printf("left point C*:%f\n", y1);
 	}
     MPI_Barrier(MPI_COMM_WORLD);
-//	printf("are you ok?\n");
 	MPI_Finalize();
     return 0;
 }

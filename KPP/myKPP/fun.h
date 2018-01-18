@@ -12,7 +12,7 @@
 #include"string.h"
 #include"complex.h"
 #include"stdlib.h"
-#include "/share/home/kuangx/opt/fftw/include/fftw3-mpi.h"
+#include "/share/home/kuangx/opt/fftw3/include/fftw3-mpi.h"
 
 #define PI 3.1415926535
 #define DOUBLE double
@@ -20,17 +20,20 @@
 static double gamma1 = 0.9999999;
 static double gamma2 = 0.9999999;
 static double gamma3 = 0.9999999;
-static int intval = 5;  //collect PW solution between two interval time
+static int intval = 10;  //collect PW solution between two interval time
 static double T = 0.50;  //total time
 static double tmax = 0.008; // the length for collecting PW solution 
 static double dT = 0.001; // the length for  PW solution for updating POD Matrix
-static double errflag = 0.002; //errindicator threshold
+static double errflag = 0.0005; //errindicator threshold
 
 void
 zcopy_(int*, complex*, int*, complex*, int*);
 
 void 
 KPP_PW(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, int , int, MPI_Comm);
+
+void 
+testKPP_PW(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, int , int, MPI_Comm);
 
 void 
 KPP_APOD(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, int , int, MPI_Comm);
