@@ -47,6 +47,7 @@ main(int argc, char* argv[])
 
 /***************KPP_PW is used plane wave method to solver KPP problem*************/
 //	KPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
+//	KPP_TGPW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 //	testKPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 /****call KPP_APOD function to solver KPP problem for lambda= laml1*****/
 	KPP_POD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);

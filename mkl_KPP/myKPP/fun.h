@@ -17,14 +17,15 @@
 #define PI 3.1415926535
 #define DOUBLE double
 
-static double gamma1 = 0.9999999;
-static double gamma2 = 0.9999999;
-static double gamma3 = 0.9999999;
+static double gamma1 = 0.99999999999;
+static double gamma2 = 0.99999999999;
+static double gamma3 = 0.99999999999999;
 static int intval = 100;  //collect PW solution between two interval time
 static double T = 1.0;  //total time
 static double tmax = 0.01; // the length for collecting PW solution 
 static double errflag = 0.5; //errindicator threshold
 static int initer = 10000;  // number of time for updating POD Matrix
+
 void
 zcopy_(int*, complex*, int*, complex*, int*);
 
