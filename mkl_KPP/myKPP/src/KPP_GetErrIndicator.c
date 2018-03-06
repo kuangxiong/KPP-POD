@@ -54,8 +54,6 @@ KPP_GetErrIndicator(int nPOD, int localN, int N, double cost, double dt,complex 
     zgemv_("N", &tmpM, &tmpN, &alpha, BN, &tmpM, curPOD, &ONE, &beta, curu, &ONE);
     zgemv_("N", &tmpM, &tmpN, &alpha, BN, &tmpM, prePOD, &ONE, &beta, preu, &ONE);
 
-
-
     for(i=0; i< localN; i++){
         for(j=0; j< (N/2+1); j++){
             tmpu[i*(N/2+1)+j] = lgNotTMat[i*(N/2+1)+j] + cost * lgTMat[i*(N/2+1)+j];

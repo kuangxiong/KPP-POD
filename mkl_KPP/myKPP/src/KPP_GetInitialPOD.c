@@ -16,17 +16,16 @@ KPP_GetInitialPOD(int N, int localN, int nPOD, complex *u_hat,  complex *BN1, co
 	int descA[9], k, i, j, tmpN, ONE=1, ictxt, nprow, npcol;
 	complex tmpV[localN*N], tmpu_hat[localN*N], value;
 	
-
-	tmpN = N*N;
-	descA[0]=1; descA[1]=0; descA[2] = N*N; descA[3] = 1; descA[4] = 1;
-	descA[5] = 1; descA[6] = 0; descA[7] = 0; descA[8] = localN*N;
-
 	nprow = numprocs;
 	npcol = 1;
 
 	Cblacs_pinfo(&myrank, &numprocs);
 	Cblacs_get(-1, 0, &ictxt);
 	Cblacs_gridinit(&ictxt, "Row", nprow, npcol);
+	
+    tmpN = N*N;
+	descA[0]=1; descA[1]=0; descA[2] = N*N; descA[3] = 1; descA[4] = 1;
+	descA[5] = 1; descA[6] = 0; descA[7] = 0; descA[8] = localN*N;
 
 	for(i=0; i< localN; i++){
 		for(j=0; j< N; j++){
@@ -38,9 +37,8 @@ KPP_GetInitialPOD(int N, int localN, int nPOD, complex *u_hat,  complex *BN1, co
 			}
 		}
 	}
-	
 /***********************************************/	
-	k = 0;
+//	printf("i am here\n");
 	for(k=0; k< nPOD; k++)
 	{
 		for(i=0; i< localN; i++){
@@ -48,17 +46,18 @@ KPP_GetInitialPOD(int N, int localN, int nPOD, complex *u_hat,  complex *BN1, co
 				tmpV[i*N+j] = BN1[k*(localN*N)+i*N+j];
 			}
 		}
+//		pzdotc_(&tmpN, &value, tmpV, &ONE, &ONE, descA, &ONE, tmpV, 
+//						   &ONE, &ONE, descA, &ONE);
 		pzdotc_(&tmpN, &value, tmpV, &ONE, &ONE, descA, &ONE, tmpu_hat, 
-						   &ONE, &ONE, descA, &ONE);
+                &ONE, &ONE, descA, &ONE);
 
 //		printf("%d\t%f&%f\n", myrank, value);
 		PODu0[k] = value;
 	}
-
 //	if(myrank==0)
 //		for(i=0; i< localN; i++)
 //			for(j=0; j< N; j++)
 //			printf("%d\t%f&%f\t%f&%f\n", myrank, tmpu_hat[i*(N)+j], tmpV[i*(N)+j]);
-
+    Cblacs_gridexit(0);
 }
 

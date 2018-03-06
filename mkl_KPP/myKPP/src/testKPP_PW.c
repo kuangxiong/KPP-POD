@@ -84,7 +84,7 @@ void testKPP_PW(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE 
 		sinx[i] = sin(2*PI*i*h);
 	 }
 /****************************************************************************
- *           computing for Fine Grid
+ *   computing for Fine Grid
  * **********************************************************************/
 //     alloc_local1 = fftw_mpi_local_size_2d(N1, N1/2+1, comm, &localN1, &local_0_start1);
 //     u_hat1 = calloc(localN1*(N1/2+1), sizeof(*u_hat1));

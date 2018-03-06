@@ -197,15 +197,15 @@ void KPP_ComputePlane_lz(int N, DOUBLE t, DOUBLE dt, DOUBLE C, DOUBLE Amp, DOUBL
 //				u_hat[i*(N/2+1)+j] = u_hat[i*(N/2+1)+j];
 //	if(myrank ==0)
 //		printf("googd:%e&%e\t%e&%e\n", uy_hat[1*(N/2+1)+N/2-1], u_hat[1*(N/2+1)+N/2-1]);
-//       free(tmpu_hat);
-//       free(tmp_hat);
-//       free(ux_hat);
-//	   free(uy_hat);
-//	   free(rhs_hat);
-//	   free(localU);
-//	   free(localD);
-//	   free(tmplocalL);
-//	   free(tmplocalR);
-//	   free(tmpL);
-//	   free(tmpR);
+       free(tmpu_hat);
+       free(tmp_hat);
+       free(ux_hat);
+	   free(uy_hat);
+	   free(rhs_hat);
+	   free(localU);
+	   free(localD);
+	   free(tmplocalL);
+	   free(tmplocalR);
+	   free(tmpL);
+	   free(tmpR);
 }

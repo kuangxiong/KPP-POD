@@ -12,19 +12,19 @@
 #include"string.h"
 #include"complex.h"
 #include"stdlib.h"
-#include "/share/home/kuangx/opt/fftw3/include/fftw3-mpi.h"
+#include "/home/kuangx/opt/fftw3/include/fftw3-mpi.h"
 
 #define PI 3.1415926535
 #define DOUBLE double
 
-static double gamma1 = 0.99999999999;
-static double gamma2 = 0.99999999999;
-static double gamma3 = 0.99999999999999;
+static double gamma1 = 0.99999999;
+static double gamma2 = 0.99999999;
+static double gamma3 = 0.9999999;
 static int intval = 100;  //collect PW solution between two interval time
 static double T = 1.0;  //total time
-static double tmax = 0.01; // the length for collecting PW solution 
+static double tmax = 0.050; // the length for collecting PW solution 
 static double errflag = 0.5; //errindicator threshold
-static int initer = 10000;  // number of time for updating POD Matrix
+static int initer = 20000;  // number of time for updating POD Matrix
 
 void
 zcopy_(int*, complex*, int*, complex*, int*);
@@ -39,10 +39,16 @@ void
 KPP_APOD(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, int , int, MPI_Comm);
 
 void 
+KPP_TGAPOD(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, int , int, MPI_Comm);
+
+void 
 KPP_POD(int, DOUBLE, DOUBLE, DOUBLE , DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, int , int, MPI_Comm);
 
 void
 KPP_ComputePlane(int, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, complex*, int, int, long int, long int, MPI_Comm);
+
+void
+KPP_ComputePlane_lz(int, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, complex*, int, int, long int, long int, MPI_Comm);
 
 void
 KPP_BuildPODMatrix(int , int , int , int , int, double , double , 
@@ -76,3 +82,18 @@ KPP_GetPODNumber(double*, int, double);
 
 double 
 dnrm2_(int *, complex *, int *);
+
+void 
+Cblacs_pinfo(int*, int*);
+       
+void 
+Cblacs_get(int, int, int*);
+           
+void 
+Cblacs_gridinit(int*, const char*, int, int);
+               
+void 
+Cblacs_pcoord(int, int, int*, int*);
+                   
+void 
+Cblacs_gridexit(int);

@@ -19,7 +19,7 @@ main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 /***************initialize variables****************/
-    N = 512;
+    N = 32;
     laml = 0;
     lamr = 10;
     eps = 0.05;
@@ -44,13 +44,14 @@ main(int argc, char* argv[])
 
     cM = eps * laml1 * laml1 + laml1*Amp*sqrt(theta*theta + 1.0)+1.0/tau;
     C = -laml1*Amp*sqrt(theta*theta + 1.0);
-
-/***************KPP_PW is used plane wave method to solver KPP problem*************/
+/***************several adaptive ways to solver KPP problem*************/
 //	KPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 //	KPP_TGPW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 //	testKPP_PW(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
-/****call KPP_APOD function to solver KPP problem for lambda= laml1*****/
-	KPP_POD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
+//	KPP_POD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
+	KPP_TGPOD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
+//  KPP_TGAPOD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
+//	KPP_APOD_test(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 //	KPP_APOD(N, laml1, eps, tau, theta, dt, t, Amp, cM, C, y1, myrank, nprocs, MPI_COMM_WORLD);
 
     if(myrank ==0){

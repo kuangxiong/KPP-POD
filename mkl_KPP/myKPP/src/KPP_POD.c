@@ -46,10 +46,11 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
 			 *CtmpV, alpha, tmpvalue, beta, *err_hat, *NotTMat, *TMat;
      fftw_plan p1, p2;
      int i, k, j, niter = 0, ONE=1, N1, N2, nPOD, nPOD1, nPOD2,  tmpN, tmpN1;
-	 FILE *fp, *fp1;
+	 FILE *fp, *fp1, *fp2;
 
 	 fp = fopen("PODerr.text","w");
 	 fp1 = fopen("PODerrind.text","w");
+	 fp2 = fopen("testS.text","w");
      alloc_local = fftw_mpi_local_size_2d(N, N/2+1, comm, &localN, &local_0_start);
      u_hat = calloc(localN*(N/2+1), sizeof(*u_hat));
      err_hat = calloc(localN*(N/2+1), sizeof(*err_hat));
@@ -98,7 +99,9 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
         cost = cos(t);
         t = t + dt;
         
-        KPP_ComputePlane_lz(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,localN, local_0_start,  comm);
+      KPP_ComputePlane(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,localN, local_0_start,  comm);
+//      KPP_ComputePlane_lz(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,
+//              localN, local_0_start,  comm);
 		if(k%intval ==0){
             zcopy_(&N1,  u_hat, &ONE, &gatherU[(k/intval) * N1], &ONE);
         }
@@ -110,9 +113,9 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
      
      KPP_mpi_svd(ncup, N, localN, tmp4svd_hat, S, B, nprocs, myrank);
 	 k=0;
-//	 if(myrank ==0)
-//		 for(i=0; i< ncup; i++)
-//			printf("S:%d\t%f\n",ncup,  S[i]);
+	 if(myrank ==0)
+		 for(i=0; i< ncup; i++)
+			fprintf(fp2,"S:%d\t%f\n",ncup,  S[i]);
 
 	nPOD = KPP_GetPODNumber(S, ncup, gamma1);
 //	if(myrank==0)
@@ -191,7 +194,9 @@ void KPP_POD(int N, DOUBLE lam, DOUBLE eps, DOUBLE tau, DOUBLE theta, DOUBLE dt,
         beta = 0;
         zgemv_("N", &tmpN, &nPOD, &tmpvalue, BN, &tmpN, PODu, &ONE, &beta, CPODu, &ONE);
         /***************************PW solution********************************/
-        KPP_ComputePlane_lz(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,
+//        KPP_ComputePlane_lz(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,
+//                localN, local_0_start,  comm);
+        KPP_ComputePlane(N, t, dt, C, Amp, lam, theta, eps, cost, u_hat, myrank, nprocs,
                 localN, local_0_start,  comm);
         /***************************computing err*****************************/
         for(i=0; i< localN; i++) 
